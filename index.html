@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" class="sl-theme-dark">
+<head>
+  <meta charset="utf-8" />
+  <title>Transfer Vault</title>
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>" />
+  <link rel="stylesheet" type="text/css" href="./css/main.css" />
+  
+  <!-- Shoelace components -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace/cdn/themes/dark.min.css"/>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace/cdn/shoelace-autoloader.min.js"></script>
+  
+  <!-- Bring in Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs/dist/cdn.min.js"></script>
+</head>
+<!-- Gently transition the page in instead of jumping as web comps load -->
+<body x-data="state"
+      style="display: none;" x-show="bodyReady" x-transition.opacity x-transition.duration.750ms x-init="Alpine.nextTick(() => { bodyReady = true })"
+      @dragover.prevent @drop.prevent="handleFiles($event)">
+  <div class="title-float">Transfer Vault</div>
+  
+  <template x-if="!isMobileSize()">
+    <div x-data="{ isHighlighted: false }"
+         @dragover.prevent="isHighlighted = true" @dragleave.prevent="isHighlighted = false" @drop.prevent="isHighlighted = false"
+         :class="{ 'highlight': isHighlighted }" class="drop-area">
+      📂 Drag and drop files here or use the buttons
+    </div>
+  </template>
+  
+  <div>
+    <input x-ref="imageUpload" x-show="false"
+          type="file" accept="image/*" multiple @change="handleFiles($event)"></input>
+    <input x-ref="fileUpload" x-show="false"
+          type="file" multiple @change="handleFiles($event)"></input>
+    
+    <sl-button @click="$refs.fileUpload.click()">Upload Files</sl-button>
+    <sl-button @click="$refs.imageUpload.click()">Upload Images</sl-button>
+  </div>
+  
+  <template x-if="showProgress">
+    <div class="progress-wrap">
+      <sl-progress-bar :value="uploadProgress"></sl-progress-bar>
+    </div>
+  </template>
+  <div id="preview" style="max-width: 90%; max-height: 40%; overflow: auto;"></div>
+  
+  <!-- Our JS scripts -->
+  <script src="./js/util.js"></script>
+  <script src="./js/manager.js"></script>
+</body>
+</html>
