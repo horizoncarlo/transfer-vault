@@ -1,2 +1,2 @@
 # transfer-vault
-Lightweight app to allow arbitrary uploading of files, images, etc. to transfer with a shared link to others
+Lightweight app to allow arbitrary uploading of files, images, etc. to transfer with a shared link to others. Primarily because I was tired of emailing my parents photos from my phone, and didn't want to put everything on Google Photos/Drive or a similar cloud solution. I figured I already have a little server hooked up to a hard drive, so why not build my own quick and dirty solution?
