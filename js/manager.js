@@ -23,13 +23,19 @@ function alpineInit() {
 }
 
 function handleFiles(event) {
-  // Get our list of files from either the drag & drop or native file upload
+  // Get a list of files depending on our source
   let files = null;
-  if (event.dataTransfer && event.dataTransfer.files) {
+  
+  // Drag and drop from something like a file explorer
+  if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
     files = event.dataTransfer.files;
   }
-  else if (event.target && event.target.files) {
+  // Native file upload
+  else if (event.target && event.target.files && event.target.files.length > 0) {
     files = event.target.files;
+  }
+  else {
+    // TODO Error on unknown drag & drop type
   }
   
   if (files) {
