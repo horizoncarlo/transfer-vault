@@ -37,15 +37,12 @@ function handleFiles(event) {
     state.uploadProgress = 0;
     
     const promises = [];
-    files.forEach(file => {
-      promises.push(file);
-    })
+    for (let i = 0; i < files.length; i++) {
+      promises.push(readFile(files[i]));
+    }
     
     Promise.allSettled(promises).then(res => {
-      // Wait a bit so the user can see the final progress, then hide
-      setTimeout(() => {
-        state.showProgress = false;
-      }, 500);
+      state.showProgress = false;
     }).catch(err => {
       // TODO Error
     })
@@ -85,6 +82,7 @@ function processFile(file, data) {
   // If weren't not an image we can just send the file along right away
   if (!isImage(file.type)) {
     sendFile(file, data);
+    return;
   }
   // Otherwise determine if we need to resize the image
   else {
