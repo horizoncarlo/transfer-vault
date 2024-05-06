@@ -20,22 +20,28 @@
       @dragover.prevent @drop.prevent="handleFiles($event)">
   <div class="title-float">Transfer Vault</div>
   
-  <template x-if="!isMobileSize()">
-    <div x-data="{ isHighlighted: false }"
-         @dragover.prevent="isHighlighted = true" @dragleave.prevent="isHighlighted = false" @drop.prevent="isHighlighted = false"
-         :class="{ 'highlight': isHighlighted }" class="drop-area">
-      📂 Drag and drop files here or use the buttons
-    </div>
-  </template>
-  
-  <div>
+  <div class="top-panel">
+    <template x-if="!isMobileSize()">
+      <div x-data="{ isHighlighted: false }"
+          @dragover.prevent="isHighlighted = true" @dragleave.prevent="isHighlighted = false" @drop.prevent="isHighlighted = false"
+          :class="{ 'highlight': isHighlighted }" class="drop-area">
+        <span style="font-size: var(--sl-button-font-size-medium);"><sl-icon name="folder2-open"></sl-icon> Drag and drop files here or use the buttons</span>
+      </div>
+    </template>
+    
     <input x-ref="imageUpload" x-show="false"
           type="file" accept="image/*" multiple @change="handleFiles($event)"></input>
     <input x-ref="fileUpload" x-show="false"
           type="file" multiple @change="handleFiles($event)"></input>
     
-    <sl-button @click="$refs.fileUpload.click()">Upload Files</sl-button>
-    <sl-button @click="$refs.imageUpload.click()">Upload Images</sl-button>
+    <template x-if="hasUploads">
+      <sl-button @click="clearUploads"><sl-icon name="x"></sl-icon> Reset</sl-button>
+    </template>
+    <sl-button @click="$refs.fileUpload.click()"><sl-icon name="file-bar-graph"></sl-icon> Upload Files</sl-button>
+    <sl-button @click="$refs.imageUpload.click()"><sl-icon name="file-image"></sl-icon> Upload Images</sl-button>
+    <template x-if="hasUploads">
+      <sl-button @click="$refs.imageUpload.click()"><sl-icon name="upload"></sl-icon> Send <span x-text="images?.length + files?.length"></span> Files</sl-button>
+    </template>
   </div>
   
   <template x-if="showProgress">
@@ -43,7 +49,24 @@
       <sl-progress-bar :value="uploadProgress"></sl-progress-bar>
     </div>
   </template>
-  <div id="preview" style="max-width: 90%; max-height: 40%; overflow: auto;"></div>
+  <template x-if="hasUploads">
+    <div id="preview" class="preview-wrap">
+      <!-- Show the files separately at the top, the into the images -->
+      <span x-show="files.length > 0">Files:</span>
+      <template x-for="(file, index) in files">
+        <div>
+          <span x-text="file.file.name + ' (' + (file.file.size / 1000).toFixed(1) + 'kb)'"></span>
+          <sl-icon-button name="x-square" @click="files.splice(index, 1)" title="Remove this file from the upload queue"></sl-icon-button>
+        </div>
+      </template>
+      <template x-for="(image, index) in images">
+        <div class="preview-image-wrap">
+          <sl-icon-button name="x-lg" @click="images.splice(index, 1)" title="Remove this image from the upload queue" class="remove-image"></sl-icon-button>
+          <img :src="image.data"></img>
+        </div>
+      </template>
+    </div>
+  </template>
   
   <!-- Our JS scripts -->
   <script src="./js/util.js"></script>

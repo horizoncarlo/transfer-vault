@@ -1,10 +1,13 @@
-const imageMaxWidth = 800;
-const imageMaxHeight = 800;
+const imageMaxWidth = 300;
+const imageMaxHeight = 300;
 
 let state = {
   bodyReady: false,
   showProgress: false,
-  uploadProgress: 0
+  uploadProgress: 0,
+  hasUploads: false,
+  images: [],
+  files: []
 }
 
 function init() {
@@ -20,6 +23,15 @@ init();
 
 function alpineInit() {
   state = Alpine.reactive(state);
+  
+  Alpine.effect(() => {
+    state.hasUploads = state.images?.length > 0 || state.files?.length > 0;
+  });
+}
+
+function clearUploads() {
+  state.images = [];
+  state.files = [];
 }
 
 function handleFiles(event) {
@@ -59,7 +71,7 @@ function readFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      processFile(file, reader.result);
+      sendFile(file, reader.result);
       resolve();
     }
     
@@ -84,67 +96,12 @@ function readFile(file) {
   });
 }
 
-function processFile(file, data) {
-  // If weren't not an image we can just send the file along right away
-  if (!isImage(file.type)) {
-    sendFile(file, data);
-    return;
-  }
-  // Otherwise determine if we need to resize the image
-  else {
-    const image = new Image();
-    image.src = data;
-    
-    image.onload = function() {
-      const width = image.width;
-      const height = image.height;
-      const needResize = (width > imageMaxWidth) || (height > imageMaxHeight);
-      
-      // If we don't need to resize just send along the file
-      if (!needResize) {
-        sendFile(file, data);
-        return;
-      }
-      
-      // Otherwise scale but maintain the aspect ratio
-      let newWidth, newHeight;
-      if (width > height) {
-        newHeight = height * (imageMaxWidth / width);
-        newWidth = imageMaxWidth;
-      }
-      else {
-        newWidth = width * (imageMaxHeight / height);
-        newHeight = imageMaxHeight;
-      }
-      
-      // Apply to the canvas and send along the scaled result
-      const canvas = document.createElement('canvas');
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-      
-      const context = canvas.getContext('2d');
-      context.drawImage(this, 0, 0, newWidth, newHeight);
-      
-      sendFile(file, canvas.toDataURL(file.type));
-    }
-    
-    image.onerror = (e) => {
-      // TODO Error
-    }
-  }
-}
-
 function sendFile(file, data) {
   if (isImage(file.type)) {
-    const img = document.createElement('img');
-    img.classList.add('preview-image');
-    img.src = data;
-    document.getElementById('preview').appendChild(img);
+    state.images.push({ file: file, data: data });
   }
   else {
-    const text = document.createElement('div');
-    text.innerText = file.name + ' (' + (file.size/1000).toFixed(1) + 'kb)';
-    document.getElementById('preview').appendChild(text);
+    state.files.push({ file: file, data: data });
   }
   
   console.log("Would send file of size", file.size);
